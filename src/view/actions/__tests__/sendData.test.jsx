@@ -165,6 +165,10 @@ describe('Send data view', () => {
     expect(methodSelect).toHaveTextContent('POST');
     expect(urlInput.value).toBe('http://www.google.com?a=b');
 
+    // Need to click query params tab since default is now body tab
+    const { queryParamsTab } = getFromFields();
+    await click(queryParamsTab);
+
     const queryKeyInput = getTextFieldByLabel('Query Param Key 0');
     const queryValueInput = getTextFieldByLabel('Query Param Value 0');
 
@@ -245,6 +249,10 @@ describe('Send data view', () => {
     await changeInputValue(urlInput, 'http://www.anothergoogle.com?a=b');
     await changePickerValue(methodSelect, 'PUT');
 
+    // Need to click query params tab since default is now body tab
+    const { queryParamsTab } = getFromFields();
+    await click(queryParamsTab);
+
     const queryKeyInput = getTextFieldByLabel('Query Param Key 0');
     const queryValueInput = getTextFieldByLabel('Query Param Value 0');
 
@@ -311,7 +319,7 @@ describe('Send data view', () => {
 
     expect(extensionBridge.getSettings()).toEqual({
       method: 'POST',
-      url: '',
+      url: 'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}',
       body: { ee: 'ff' }
     });
   });
@@ -437,6 +445,10 @@ describe('Send data view', () => {
         });
       });
 
+      // Need to click query params tab since default is now body tab
+      const { queryParamsTab } = getFromFields();
+      await click(queryParamsTab);
+
       const { addAnotherButton } = getFromFields();
       await click(addAnotherButton);
 
@@ -447,7 +459,18 @@ describe('Send data view', () => {
       await changeInputValue(valueInput, 'd');
 
       expect(extensionBridge.getSettings()).toEqual({
-        method: 'GET',
+        body: {
+          events: [
+            {
+              xdm: {
+                eventType: '{{xdm.eventType}}',
+                timestamp: '{{xdm.timestamp}}',
+                identityMap: '{{xdm.identityMap}}'
+              }
+            }
+          ]
+        },
+        method: 'POST',
         url: 'http://www.google.com?a=b&c=d'
       });
     });
@@ -463,11 +486,26 @@ describe('Send data view', () => {
         });
       });
 
+      // Need to click query params tab since default is now body tab
+      const { queryParamsTab } = getFromFields();
+      await click(queryParamsTab);
+
       const deleteButton = getTextFieldByLabel('Delete Query Param 1');
       await click(deleteButton);
 
       expect(extensionBridge.getSettings()).toEqual({
-        method: 'GET',
+        body: {
+          events: [
+            {
+              xdm: {
+                eventType: '{{xdm.eventType}}',
+                timestamp: '{{xdm.timestamp}}',
+                identityMap: '{{xdm.identityMap}}'
+              }
+            }
+          ]
+        },
+        method: 'POST',
         url: 'http://www.google.com?a=b'
       });
     });
@@ -506,7 +544,7 @@ describe('Send data view', () => {
 
       expect(extensionBridge.getSettings()).toEqual({
         method: 'GET',
-        url: '',
+        url: 'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}',
         headers: [
           {
             key: 'a',
@@ -550,7 +588,7 @@ describe('Send data view', () => {
 
       expect(extensionBridge.getSettings()).toEqual({
         method: 'GET',
-        url: '',
+        url: 'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}',
         headers: [
           {
             key: 'a',
@@ -594,7 +632,7 @@ describe('Send data view', () => {
 
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
-        url: '',
+        url: 'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}',
         body: {
           a: 'b',
           c: 'd'
@@ -629,7 +667,7 @@ describe('Send data view', () => {
 
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
-        url: '',
+        url: 'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}',
         body: {
           a: 'b'
         }
@@ -660,7 +698,7 @@ describe('Send data view', () => {
 
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
-        url: '',
+        url: 'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}',
         body: { a: 'b', c: 'd' }
       });
     });
@@ -686,7 +724,7 @@ describe('Send data view', () => {
 
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
-        url: ''
+        url: 'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}'
       });
 
       const { bodyRawCheckbox } = getFromFields();
@@ -694,7 +732,7 @@ describe('Send data view', () => {
 
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
-        url: '',
+        url: 'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}',
         body: '{a:"b",c:"d"}a'
       });
     });
