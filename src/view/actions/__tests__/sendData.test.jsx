@@ -433,6 +433,55 @@ describe('Send data view', () => {
     expect(bodyJsonPairsValueInput0).not.toHaveAttribute('aria-invalid');
   });
 
+  test('validates configId UUID format correctly', async () => {
+    renderView(SendData);
+
+    await act(async () => {
+      extensionBridge.init({
+        settings: {
+          method: 'POST',
+          url: 'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}'
+        }
+      });
+    });
+
+    const { queryParamsTab } = getFromFields();
+    await click(queryParamsTab);
+
+    // The extension should already have configId parameter by default
+    const configIdValueInput = getTextFieldByLabel('Query Param Value 0');
+
+    // Test 1: Empty configId value should show error
+    await changeInputValue(configIdValueInput, '');
+
+    await act(async () => {
+      extensionBridge.validate();
+    });
+
+    expect(configIdValueInput).toHaveAttribute('aria-invalid', 'true');
+
+    // Test 2: Invalid UUID format should show error
+    await changeInputValue(configIdValueInput, 'invalid-uuid-format');
+
+    await act(async () => {
+      extensionBridge.validate();
+    });
+
+    expect(configIdValueInput).toHaveAttribute('aria-invalid', 'true');
+
+    // Test 3: Valid UUID format should pass
+    await changeInputValue(
+      configIdValueInput,
+      '599ca3ec-4a21-4659-8dff-e292ad8d5fa4'
+    );
+
+    await act(async () => {
+      extensionBridge.validate();
+    });
+
+    expect(configIdValueInput).not.toHaveAttribute('aria-invalid', 'true');
+  });
+
   describe('query params editor', () => {
     test('allows you to add a new row', async () => {
       renderView(SendData);
