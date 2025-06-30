@@ -14,7 +14,6 @@ export default ({ settings }) => {
   return {
     method: settings?.method || 'POST',
     url:
-      settings?.url ||
-      'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}'
+      settings?.url || 'https://edge.adobedc.net/ee/v1/interact?configId=1234'
   };
 };
