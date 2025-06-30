@@ -11,8 +11,8 @@ governing permissions and limitations under the License.
 */
 
 const METHOD_CONSTANTS = {
-  NO_BODY_METHODS: ['GET', 'HEAD'],
-  DEFAULT_METHOD: 'GET'
+  NO_BODY_METHODS: [], // Only POST is supported, which always has a body
+  DEFAULT_METHOD: 'POST'
 };
 
 export default {
