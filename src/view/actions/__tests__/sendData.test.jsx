@@ -319,7 +319,7 @@ describe('Send data view', () => {
 
     expect(extensionBridge.getSettings()).toEqual({
       method: 'POST',
-      url: 'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}',
+      url: 'https://edge.adobedc.net/ee/v1/interact?configId=1234',
       body: { ee: 'ff' }
     });
   });
@@ -593,7 +593,7 @@ describe('Send data view', () => {
 
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
-        url: 'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}',
+        url: 'https://edge.adobedc.net/ee/v1/interact?configId=1234',
         headers: [
           {
             key: 'a',
@@ -648,7 +648,7 @@ describe('Send data view', () => {
 
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
-        url: 'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}',
+        url: 'https://edge.adobedc.net/ee/v1/interact?configId=1234',
         headers: [
           {
             key: 'a',
