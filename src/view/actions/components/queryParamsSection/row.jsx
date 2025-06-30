@@ -25,6 +25,8 @@ export default function QueryParamsSectionRow(
   variables
 ) {
   const { id, value, key } = variable;
+  const isConfigId = key === 'configId';
+
   return (
     <Flex direction="row" gap="size-200" key={`queryParams${id}`}>
       <View flex>
@@ -33,8 +35,14 @@ export default function QueryParamsSectionRow(
           aria-label={`Query Param Key ${index}`}
           width="100%"
           name={`queryParams.${index}.key`}
-          supportDataElement
+          supportDataElement={!isConfigId}
+          isDisabled={isConfigId}
+          description={
+            isConfigId ? 'Required parameter for Adobe Edge Network' : undefined
+          }
           onChange={(v) => {
+            if (isConfigId) return; // Prevent editing configId key
+
             const newQueryParams = variables.slice();
             newQueryParams[index].key = v;
 
@@ -53,6 +61,11 @@ export default function QueryParamsSectionRow(
           width="100%"
           name={`queryParams.${index}.value`}
           supportDataElement
+          isRequired={isConfigId}
+          necessityIndicator={isConfigId ? 'label' : undefined}
+          description={
+            isConfigId ? 'Your Adobe datastream configuration ID' : undefined
+          }
           onChange={(v) => {
             const newQueryParams = variables.slice();
             newQueryParams[index].value = v;
@@ -66,7 +79,7 @@ export default function QueryParamsSectionRow(
       </View>
 
       <View width="size-450">
-        {variables.length > 1 && (
+        {variables.length > 1 && !isConfigId && (
           <ActionButton
             aria-label={`Delete Query Param ${index}`}
             isQuiet
