@@ -12,7 +12,9 @@ governing permissions and limitations under the License.
 
 export default ({ settings }) => {
   return {
-    method: settings?.method || 'GET',
-    url: settings?.url || ''
+    method: settings?.method || 'POST',
+    url:
+      settings?.url ||
+      'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}'
   };
 };

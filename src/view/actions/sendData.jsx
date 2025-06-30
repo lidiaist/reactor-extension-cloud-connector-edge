@@ -41,7 +41,7 @@ import getAdvancedValues from './components/advancedSection/getInitValues';
 import getAdvancedSettings from './components/advancedSection/getSettings';
 import validateAdvancedFields from './components/advancedSection/validate';
 
-const DEFAULT_TAB = 'queryParams';
+const DEFAULT_TAB = 'body';
 
 export default function SendData() {
   const [selectedTab, setSelectedTab] = useState(DEFAULT_TAB);

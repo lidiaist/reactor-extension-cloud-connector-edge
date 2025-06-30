@@ -17,9 +17,24 @@ export default ({ settings }) => {
     bodyRaw = JSON.stringify(bodyRaw, null, 2);
   }
 
+  // If no settings exist (new action), provide default XDM event structure
+  const defaultBody = {
+    events: [
+      {
+        xdm: {
+          eventType: '{{xdm.eventType}}',
+          timestamp: '{{xdm.timestamp}}',
+          identityMap: '{{xdm.identityMap}}'
+          // Add additional fields from your XDM data element
+          // Example: web: '{{xdm.web}}', commerce: '{{xdm.commerce}}'
+        }
+      }
+    ]
+  };
+
   return {
     bodyType: 'raw',
-    bodyRaw: bodyRaw || '',
+    bodyRaw: bodyRaw || JSON.stringify(defaultBody, null, 2),
     bodyJsonPairs: []
   };
 };

@@ -17,6 +17,12 @@ export default ({ settings }) => {
   const queryParams = getQueryParamsFromUrl(settings?.url);
 
   if (queryParams.length === 0) {
+    // Add default configId query parameter
+    queryParams.push({
+      key: 'configId',
+      value: '{{configId}}'
+    });
+    // Add empty row for additional parameters
     queryParams.push(getEmptyQueryParam());
   }
 
