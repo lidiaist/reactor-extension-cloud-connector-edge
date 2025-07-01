@@ -18,20 +18,68 @@ import WrappedTextField from '../../../components/wrappedTextField';
 import getQueryParamsFromUrl from '../../../utils/getQueryParamsFromUrl';
 import getEmptyQueryParam from '../queryParamsSection/getEmptyValue';
 
+const BASE_URL_OPTIONS = [
+  {
+    id: 'production',
+    name: 'Production',
+    url: 'https://edge.adobedc.net/ee/v1/interact'
+  },
+  {
+    id: 'pre-prod',
+    name: 'Pre-Production',
+    url: 'https://edge.adobedc.net/ee-pre-prod/v1/interact'
+  }
+];
+
 const parseQueryParams = (setValue, v) => {
   const queryParams = getQueryParamsFromUrl(v);
-  if (queryParams.length === 0) {
-    queryParams.push(getEmptyQueryParam());
+  // Filter out configId since it's handled separately
+  const filteredQueryParams = queryParams.filter(
+    (param) => param.key !== 'configId'
+  );
+
+  if (filteredQueryParams.length === 0) {
+    filteredQueryParams.push(getEmptyQueryParam());
   }
 
-  setValue('queryParams', queryParams, {
+  setValue('queryParams', filteredQueryParams, {
     shouldValidate: false,
     shouldDirty: false
   });
 };
 
+const constructUrl = (baseUrlId, configId, queryParams = []) => {
+  const baseUrlOption = BASE_URL_OPTIONS.find(
+    (option) => option.id === baseUrlId
+  );
+  if (!baseUrlOption || !configId) return '';
+
+  let url = `${baseUrlOption.url}?configId=${configId}`;
+
+  // Add additional query parameters
+  queryParams.forEach((param) => {
+    if (param.key && param.key !== 'configId') {
+      url += `&${encodeURIComponent(param.key)}=${encodeURIComponent(param.value || '')}`;
+    }
+  });
+
+  return url;
+};
+
 export default function RequestSectionFields({ onMethodUpdate }) {
-  const { setValue, control } = useFormContext();
+  const { setValue, control, watch } = useFormContext();
+
+  const baseUrlId = watch('baseUrlId');
+  const configId = watch('configId');
+  const queryParams = watch('queryParams') || [];
+
+  // Update the full URL whenever baseUrlId, configId, or queryParams change
+  React.useEffect(() => {
+    if (baseUrlId && configId) {
+      const fullUrl = constructUrl(baseUrlId, configId, queryParams);
+      setValue('url', fullUrl, { shouldValidate: true });
+    }
+  }, [baseUrlId, configId, queryParams, setValue]);
 
   return (
     <>
@@ -67,19 +115,50 @@ export default function RequestSectionFields({ onMethodUpdate }) {
         />
 
         <View flex>
-          <WrappedTextField
-            minWidth="size-6000"
-            width="100%"
-            name="url"
-            label="URL"
-            isRequired
-            necessityIndicator="label"
-            description="Hello Garage week! Enter request URL (eg. http://example.com/path?q=true)."
-            supportDataElement
-            onChange={(v) => parseQueryParams(setValue, v)}
-          />
+          <Flex gap="size-100" width="100%">
+            <Controller
+              control={control}
+              name="baseUrlId"
+              defaultValue="production"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Picker
+                  label="Environment"
+                  minWidth="size-2000"
+                  isRequired
+                  necessityIndicator="label"
+                  selectedKey={value}
+                  items={BASE_URL_OPTIONS}
+                  onSelectionChange={onChange}
+                  onBlur={onBlur}
+                >
+                  {(item) => <Item>{item.name}</Item>}
+                </Picker>
+              )}
+            />
+
+            <View flex>
+              <WrappedTextField
+                minWidth="size-2000"
+                width="100%"
+                name="configId"
+                label="Config ID"
+                isRequired
+                necessityIndicator="label"
+                description="Enter the configuration ID for the Edge Network."
+                supportDataElement
+              />
+            </View>
+          </Flex>
         </View>
       </Flex>
+
+      {/* Hidden field to store the constructed URL */}
+      <Controller
+        control={control}
+        name="url"
+        defaultValue=""
+        render={() => null}
+      />
     </>
   );
 }

@@ -10,6 +10,15 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-export default ({ method, url }) => {
-  return { method, url };
+export default ({ method, url, baseUrlId, configId }) => {
+  // Return the primary settings with the constructed URL
+  // The baseUrlId and configId are for internal form management,
+  // but the final URL is what gets sent in the actual request
+  return {
+    method,
+    url,
+    // Store the component values for form persistence
+    baseUrlId,
+    configId
+  };
 };
