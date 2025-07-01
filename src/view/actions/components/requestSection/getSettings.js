@@ -10,6 +10,43 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-export default ({ method, url }) => {
-  return { method, url };
+const BASE_URL_OPTIONS = [
+  {
+    id: 'production',
+    name: 'Production',
+    url: 'https://edge.adobedc.net/ee/v1/collect'
+  },
+  {
+    id: 'pre-prod',
+    name: 'Pre-Production',
+    url: 'https://edge.adobedc.net/ee-pre-prod/v1/collect'
+  }
+];
+
+const constructUrl = (baseUrlId, configId) => {
+  const baseUrlOption = BASE_URL_OPTIONS.find(
+    (option) => option.id === baseUrlId
+  );
+  if (!baseUrlOption || !configId) return '';
+
+  return `${baseUrlOption.url}?configId=${configId}`;
+};
+
+export default ({ method, url, baseUrlId, configId }) => {
+  // If no URL is provided but we have baseUrlId and configId, construct it
+  let finalUrl = url;
+  if (!url && baseUrlId && configId) {
+    finalUrl = constructUrl(baseUrlId, configId);
+  }
+
+  // Return the primary settings with the constructed URL
+  // The baseUrlId and configId are for internal form management,
+  // but the final URL is what gets sent in the actual request
+  return {
+    method,
+    url: finalUrl,
+    // Store the component values for form persistence
+    baseUrlId,
+    configId
+  };
 };

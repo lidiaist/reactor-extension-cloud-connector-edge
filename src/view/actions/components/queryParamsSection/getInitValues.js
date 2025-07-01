@@ -14,14 +14,14 @@ import getEmptyQueryParam from './getEmptyValue';
 import getQueryParamsFromUrl from '../../../utils/getQueryParamsFromUrl';
 
 export default ({ settings }) => {
-  const queryParams = getQueryParamsFromUrl(settings?.url);
+  const allQueryParams = getQueryParamsFromUrl(settings?.url);
+
+  // Filter out configId since it's handled separately in the request section
+  const queryParams = allQueryParams.filter(
+    (param) => param.key !== 'configId'
+  );
 
   if (queryParams.length === 0) {
-    // Add default configId query parameter
-    queryParams.push({
-      key: 'configId',
-      value: '{{configId}}'
-    });
     // Add empty row for additional parameters
     queryParams.push(getEmptyQueryParam());
   }

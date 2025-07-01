@@ -95,7 +95,17 @@ export default (env, argv) => {
     },
     entry: entries,
     devtool: argv.mode === 'development' ? 'source-map' : false,
-    plugins: plugins,
+    plugins: [
+      ...plugins,
+      new (require('webpack').DefinePlugin)({
+        'process.env.NODE_ENV': JSON.stringify(argv.mode || 'development'),
+        'process.browser': JSON.stringify(true),
+        'process.version': JSON.stringify(''),
+        'process.versions': JSON.stringify({}),
+        'process.env': JSON.stringify(process.env || {}),
+        global: 'globalThis'
+      })
+    ],
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: '[name].js',
@@ -153,7 +163,13 @@ export default (env, argv) => {
       ]
     },
     resolve: {
-      extensions: ['.js', '.jsx']
+      extensions: ['.js', '.jsx'],
+      fallback: {
+        process: false,
+        util: false,
+        path: false,
+        fs: false
+      }
     }
   };
 };

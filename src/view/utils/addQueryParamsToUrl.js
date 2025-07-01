@@ -40,14 +40,34 @@ const encodeUriComponentWithToken = (value) => {
 };
 
 export default (url, queryParamsArray) => {
-  [url] = url.split('?');
+  // Extract existing query parameters to preserve configId
+  let configId = '';
+  let baseUrl = url;
+
+  if (url.includes('?')) {
+    const [urlPart, queryPart] = url.split('?');
+    baseUrl = urlPart;
+
+    // Extract configId from existing query parameters
+    const existingParams = new URLSearchParams(queryPart);
+    configId = existingParams.get('configId');
+  }
+
   let queryParams = '';
   let i = 0;
 
+  // Add configId first if it exists
+  if (configId) {
+    queryParams += `?configId=${encodeURIComponent(configId)}`;
+    i = 1;
+  }
+
+  // Add other query parameters
   if (queryParamsArray.length > 0) {
     queryParamsArray.forEach((q) => {
-      if (q.key) {
-        queryParams += `${i === 0 ? '?' : ''}${i > 0 ? '&' : ''}${
+      if (q.key && q.key !== 'configId') {
+        // Skip configId as it's already added
+        queryParams += `${i === 0 ? '?' : '&'}${
           containsDataElementToken(q.key)
             ? encodeUriComponentWithToken(q.key)
             : encodeURIComponent(q.key)
@@ -61,5 +81,5 @@ export default (url, queryParamsArray) => {
     });
   }
 
-  return url + queryParams;
+  return baseUrl + queryParams;
 };
