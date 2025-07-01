@@ -241,8 +241,6 @@ describe('Send data view', () => {
     expect(settings.url).toBe(
       'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc'
     );
-    expect(settings.baseUrlId).toBe('production');
-    expect(settings.configId).toBe('12345678-1234-1234-1234-123456789abc');
     expect(settings.method).toBe('POST');
   });
 
@@ -266,8 +264,6 @@ describe('Send data view', () => {
     expect(settings.url).toBe(
       'https://edge.adobedc.net/ee-pre-prod/v1/collect?configId=87654321-4321-4321-4321-ba9876543210'
     );
-    expect(settings.baseUrlId).toBe('pre-prod');
-    expect(settings.configId).toBe('87654321-4321-4321-4321-ba9876543210');
     expect(settings.method).toBe('POST');
     expect(settings.headers).toEqual([{ key: 'cc', value: 'dd' }]);
     expect(settings.body).toEqual({ ee: 'ff' });
@@ -301,8 +297,6 @@ describe('Send data view', () => {
     expect(settings.url).toBe(
       'https://edge.adobedc.net/ee-pre-prod/v1/collect?configId=87654321-4321-4321-4321-ba9876543210&testParam=testValue'
     );
-    expect(settings.baseUrlId).toBe('pre-prod');
-    expect(settings.configId).toBe('87654321-4321-4321-4321-ba9876543210');
   }, 10000);
 
   // Unit test for URL construction functions
@@ -338,10 +332,7 @@ describe('Send data view', () => {
     expect(settingsResult.url).toBe(
       'https://edge.adobedc.net/ee-pre-prod/v1/collect?configId=87654321-4321-4321-4321-ba9876543210'
     );
-    expect(settingsResult.baseUrlId).toBe('pre-prod');
-    expect(settingsResult.configId).toBe(
-      '87654321-4321-4321-4321-ba9876543210'
-    );
+    expect(settingsResult.method).toBe('POST');
   });
 
   test('sets settings from body raw value', async () => {
@@ -365,8 +356,6 @@ describe('Send data view', () => {
     expect(extensionBridge.getSettings()).toEqual({
       method: 'POST',
       url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-      baseUrlId: 'production',
-      configId: '12345678-1234-1234-1234-123456789abc',
       body: { ee: 'ff' }
     });
   });
@@ -566,9 +555,7 @@ describe('Send data view', () => {
           ]
         },
         method: 'POST',
-        url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc&a=b&c=d',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc'
+        url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc&a=b&c=d'
       });
     });
 
@@ -603,9 +590,7 @@ describe('Send data view', () => {
           ]
         },
         method: 'POST',
-        url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc&a=b',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc'
+        url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc&a=b'
       });
     });
   });
@@ -644,8 +629,6 @@ describe('Send data view', () => {
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
         url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc',
         headers: [
           {
             key: 'a',
@@ -701,8 +684,6 @@ describe('Send data view', () => {
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
         url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc',
         headers: [
           {
             key: 'a',
@@ -758,8 +739,6 @@ describe('Send data view', () => {
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
         url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc',
         body: {
           a: 'b',
           c: 'd'
@@ -795,8 +774,6 @@ describe('Send data view', () => {
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
         url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc',
         body: {
           a: 'b'
         }
@@ -828,8 +805,6 @@ describe('Send data view', () => {
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
         url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc',
         body: { a: 'b', c: 'd' }
       });
     });
@@ -855,9 +830,7 @@ describe('Send data view', () => {
 
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
-        url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc'
+        url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc'
       });
 
       const { bodyRawCheckbox } = getFromFields();
@@ -866,8 +839,6 @@ describe('Send data view', () => {
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
         url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc',
         body: '{a:"b",c:"d"}a'
       });
     });
