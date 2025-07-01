@@ -22,12 +22,12 @@ const BASE_URL_OPTIONS = [
   {
     id: 'production',
     name: 'Production',
-    url: 'https://edge.adobedc.net/ee/v1/interact'
+    url: 'https://edge.adobedc.net/ee/v1/collect'
   },
   {
     id: 'pre-prod',
     name: 'Pre-Production',
-    url: 'https://edge.adobedc.net/ee-pre-prod/v1/interact'
+    url: 'https://edge.adobedc.net/ee-pre-prod/v1/collect'
   }
 ];
 

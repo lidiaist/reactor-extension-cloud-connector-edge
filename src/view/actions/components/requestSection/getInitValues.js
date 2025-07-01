@@ -13,11 +13,11 @@ governing permissions and limitations under the License.
 const BASE_URL_OPTIONS = [
   {
     id: 'production',
-    url: 'https://edge.adobedc.net/ee/v1/interact'
+    url: 'https://edge.adobedc.net/ee/v1/collect'
   },
   {
     id: 'pre-prod',
-    url: 'https://edge.adobedc.net/ee-pre-prod/v1/interact'
+    url: 'https://edge.adobedc.net/ee-pre-prod/v1/collect'
   }
 ];
 
@@ -68,7 +68,7 @@ const parseUrl = (url) => {
 export default ({ settings }) => {
   const defaultUrl =
     settings?.url ||
-    'https://edge.adobedc.net/ee/v1/interact?configId=12345678-1234-1234-1234-123456789abc';
+    'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc';
   const { baseUrlId, configId } = parseUrl(defaultUrl);
 
   return {
