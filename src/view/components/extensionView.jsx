@@ -22,7 +22,7 @@ const ExtensionView = ({ getInitialValues, getSettings, validate, render }) => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   const methods = useForm({
-    mode: 'onTouched',
+    mode: 'all',
     shouldUnregister: false,
     resolver: (values) => ({ values, errors: validate(values) })
   });
