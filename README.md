@@ -1,10 +1,10 @@
-# Cloud Connector extension for Adobe Experience Platform event forwarding
+# Data Sharing at the Edge extension for Adobe Experience Platform event forwarding
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/adobe/reactor-extension-cloud-connector-edge/node.js.yml?style=flat)](https://github.com/adobe/reactor-extension-cloud-connector-edge/actions)
 [![Coverage Status](https://coveralls.io/repos/github/adobe/reactor-extension-cloud-connector-edge/badge.svg?branch=main)](https://coveralls.io/github/adobe/reactor-extension-cloud-connector-edge?branch=main)
-[![npm (scoped with tag)](https://img.shields.io/npm/v/@adobe/reactor-extension-cloud-connector-edge.svg?style=flat)](https://www.npmjs.com/package/@adobe/reactor-extension-cloud-connector-edge)
+[![npm (scoped with tag)](https://img.shields.io/npm/v/@adobe/reactor-extension-data-sharing-at-the-edge.svg?style=flat)](https://www.npmjs.com/package/@adobe/reactor-extension-data-sharing-at-the-edge)
 
-Cloud Connector extension for Adobe Experience Platform event forwarding. It allows you to make `fetch` calls to third-party endpoints.
+Data Sharing at the Edge extension for Adobe Experience Platform event forwarding. It enables secure data sharing at the edge to external endpoints.
 
 ## Get started
 

@@ -1,9 +1,9 @@
 {
-  "displayName": "Adobe Cloud Connector",
-  "name": "adobe-cloud-connector",
+  "displayName": "Data Sharing at the Edge",
+  "name": "data-sharing-at-the-edge",
   "iconPath": "resources/icons/cloud-connector.svg",
   "version": "1.2.5",
-  "description": "Extension that allows users to send data to 3rd party external sources.",
+  "description": "Extension that enables secure data sharing at the edge to external endpoints.",
   "author": {
     "name": "Adobe Systems",
     "url": "http://adobe.com",
@@ -14,7 +14,7 @@
   "actions": [
     {
       "name": "send-data",
-      "displayName": "Make Fetch Call",
+      "displayName": "Send Data to External Endpoint",
       "libPath": "src/lib/actions/sendData.js",
       "viewPath": "actions/sendData.html",
       "schema": {
