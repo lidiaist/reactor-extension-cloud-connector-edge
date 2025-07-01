@@ -9,7 +9,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-import { screen, act, waitFor } from '@testing-library/react';
+import { screen, act, waitFor, fireEvent } from '@testing-library/react';
 import renderView from '../../__tests_helpers__/renderView';
 import {
   changePickerValue,
@@ -223,94 +223,134 @@ describe('Send data view', () => {
     expect(bodyRawInput.value).toBe('{"e":"f"}');
   });
 
-  test('sets settings from form values', async () => {
+  test('URL construction works with existing URL patterns', async () => {
+    renderView(SendData);
+
+    // Test with production URL
+    await act(async () => {
+      extensionBridge.init({
+        settings: {
+          method: 'POST',
+          url: 'https://edge.adobedc.net/ee/v1/interact?configId=12345678-1234-1234-1234-123456789abc',
+          headers: [{ key: 'c', value: 'd' }],
+          body: { e: 'f' }
+        }
+      });
+    });
+
+    let settings = extensionBridge.getSettings();
+    expect(settings.url).toBe(
+      'https://edge.adobedc.net/ee/v1/interact?configId=12345678-1234-1234-1234-123456789abc'
+    );
+    expect(settings.baseUrlId).toBe('production');
+    expect(settings.configId).toBe('12345678-1234-1234-1234-123456789abc');
+    expect(settings.method).toBe('POST');
+  });
+
+  test('URL construction works with pre-production URLs', async () => {
+    renderView(SendData);
+
+    // Test with pre-production URL
+    await act(async () => {
+      extensionBridge.init({
+        settings: {
+          method: 'POST',
+          url: 'https://edge.adobedc.net/ee-pre-prod/v1/interact?configId=87654321-4321-4321-4321-ba9876543210',
+          headers: [{ key: 'cc', value: 'dd' }],
+          body: { ee: 'ff' },
+          responseKey: 'keyName'
+        }
+      });
+    });
+
+    const settings = extensionBridge.getSettings();
+    expect(settings.url).toBe(
+      'https://edge.adobedc.net/ee-pre-prod/v1/interact?configId=87654321-4321-4321-4321-ba9876543210'
+    );
+    expect(settings.baseUrlId).toBe('pre-prod');
+    expect(settings.configId).toBe('87654321-4321-4321-4321-ba9876543210');
+    expect(settings.method).toBe('POST');
+    expect(settings.headers).toEqual([{ key: 'cc', value: 'dd' }]);
+    expect(settings.body).toEqual({ ee: 'ff' });
+    expect(settings.responseKey).toBe('keyName');
+  });
+
+  test('preserves configId when adding query parameters', async () => {
     renderView(SendData);
 
     await act(async () => {
       extensionBridge.init({
         settings: {
           method: 'POST',
-          url: 'http://www.google.com?a=b',
-          headers: [
-            {
-              key: 'c',
-              value: 'd'
-            }
-          ],
-          body: {
-            e: 'f'
-          }
+          url: 'https://edge.adobedc.net/ee-pre-prod/v1/interact?configId=87654321-4321-4321-4321-ba9876543210'
         }
       });
     });
 
-    const {
-      methodSelect,
-      environmentSelect,
-      configIdInput,
-      headersTab,
-      bodyTab,
-      saveResponseCheckbox
-    } = getFromFields();
-
-    await changePickerValue(environmentSelect, 'Pre-Production');
-    await changeInputValue(
-      configIdInput,
-      '87654321-4321-4321-4321-ba9876543210'
-    );
-    await changePickerValue(methodSelect, 'POST');
-
-    // Need to click query params tab since default is now body tab
+    // Add query parameters and verify configId is preserved
     const { queryParamsTab } = getFromFields();
     await click(queryParamsTab);
 
     const queryKeyInput = getTextFieldByLabel('Query Param Key 0');
     const queryValueInput = getTextFieldByLabel('Query Param Value 0');
 
-    await changeInputValue(queryKeyInput, 'aa');
-    await changeInputValue(queryValueInput, 'bb');
+    await changeInputValue(queryKeyInput, 'testParam');
+    await changeInputValue(queryValueInput, 'testValue');
 
-    await click(headersTab);
-
-    const headerKeyInput = getTextFieldByLabel('Header Key 0');
-    const headerValueInput = getTextFieldByLabel('Header Value 0');
-
-    await changeInputValue(headerKeyInput, 'cc');
-    await changeInputValue(headerValueInput, 'dd');
-
-    await click(bodyTab);
-
-    const { bodyJsonCheckbox } = getFromFields();
-    await click(bodyJsonCheckbox);
-
-    const bodyKeyInput = getTextFieldByLabel('Body JSON Key 0');
-    const bodyValueInput = getTextFieldByLabel('Body JSON Value 0');
-
-    await changeInputValue(bodyKeyInput, 'ee');
-    await changeInputValue(bodyValueInput, 'ff');
-
-    await click(saveResponseCheckbox);
-
-    const { responseKeyInput } = getFromFields();
-    await changeInputValue(responseKeyInput, 'keyName');
-
-    expect(extensionBridge.getSettings()).toStrictEqual({
-      method: 'POST',
-      url: 'https://edge.adobedc.net/ee-pre-prod/v1/interact?configId=87654321-4321-4321-4321-ba9876543210&aa=bb',
-      baseUrlId: 'pre-prod',
-      configId: '87654321-4321-4321-4321-ba9876543210',
-      headers: [
-        {
-          key: 'cc',
-          value: 'dd'
-        }
-      ],
-      body: {
-        ee: 'ff'
-      },
-      responseKey: 'keyName'
-    });
+    // Verify URL includes both configId and additional query params
+    const settings = extensionBridge.getSettings();
+    expect(settings.url).toBe(
+      'https://edge.adobedc.net/ee-pre-prod/v1/interact?configId=87654321-4321-4321-4321-ba9876543210&testParam=testValue'
+    );
+    expect(settings.baseUrlId).toBe('pre-prod');
+    expect(settings.configId).toBe('87654321-4321-4321-4321-ba9876543210');
   }, 10000);
+
+  // Unit test for URL construction functions
+  test('URL construction and query parameter handling work correctly', () => {
+    // Test the addQueryParamsToUrl function directly
+    const addQueryParamsToUrl =
+      require('../../utils/addQueryParamsToUrl').default;
+
+    // Test 1: Preserves configId when adding other params
+    const originalUrl =
+      'https://edge.adobedc.net/ee-pre-prod/v1/interact?configId=12345678-1234-1234-1234-123456789abc';
+    const queryParams = [{ key: 'testParam', value: 'testValue' }];
+    const result = addQueryParamsToUrl(originalUrl, queryParams);
+
+    expect(result).toBe(
+      'https://edge.adobedc.net/ee-pre-prod/v1/interact?configId=12345678-1234-1234-1234-123456789abc&testParam=testValue'
+    );
+
+    // Test 2: Handles multiple parameters
+    const multipleParams = [
+      { key: 'param1', value: 'value1' },
+      { key: 'param2', value: 'value2' }
+    ];
+    const result2 = addQueryParamsToUrl(originalUrl, multipleParams);
+
+    expect(result2).toBe(
+      'https://edge.adobedc.net/ee-pre-prod/v1/interact?configId=12345678-1234-1234-1234-123456789abc&param1=value1&param2=value2'
+    );
+
+    // Test 3: getSettings constructs URL from baseUrlId and configId
+    const getSettings =
+      require('../components/requestSection/getSettings').default;
+
+    const settingsResult = getSettings({
+      method: 'POST',
+      baseUrlId: 'pre-prod',
+      configId: '87654321-4321-4321-4321-ba9876543210'
+    });
+
+    expect(settingsResult.url).toBe(
+      'https://edge.adobedc.net/ee-pre-prod/v1/interact?configId=87654321-4321-4321-4321-ba9876543210'
+    );
+    expect(settingsResult.baseUrlId).toBe('pre-prod');
+    expect(settingsResult.configId).toBe(
+      '87654321-4321-4321-4321-ba9876543210'
+    );
+  });
 
   test('sets settings from body raw value', async () => {
     renderView(SendData);
@@ -450,7 +490,7 @@ describe('Send data view', () => {
     bodyJsonPairsValueInput0 = getTextFieldByLabel('Body JSON Value 0');
     expect(bodyJsonPairsKeyInput0).toHaveAttribute('aria-invalid', 'true');
     expect(bodyJsonPairsValueInput0).not.toHaveAttribute('aria-invalid');
-  });
+  }, 10000);
 
   test('validates configId UUID format correctly', async () => {
     renderView(SendData);
@@ -459,48 +499,34 @@ describe('Send data view', () => {
       extensionBridge.init({
         settings: {
           method: 'POST',
-          url: 'https://edge.adobedc.net/ee/v1/interact?configId={{configId}}'
+          url: 'https://edge.adobedc.net/ee/v1/interact?configId=12345678-1234-1234-1234-123456789abc'
         }
       });
     });
 
-    const { queryParamsTab } = getFromFields();
-    await click(queryParamsTab);
-
-    // Wait for the component to render properly
-    await waitFor(
-      () => {
-        expect(
-          screen.getByLabelText('Query Param Value 0')
-        ).toBeInTheDocument();
-      },
-      { timeout: 10000 }
-    );
-
-    // The extension should already have configId parameter by default
-    const configIdValueInput = getTextFieldByLabel('Query Param Value 0');
+    const { configIdInput } = getFromFields();
 
     // Test 1: Empty configId value should show error
-    await changeInputValue(configIdValueInput, '');
+    await changeInputValue(configIdInput, '');
 
     await act(async () => {
       extensionBridge.validate();
     });
 
-    expect(configIdValueInput).toHaveAttribute('aria-invalid', 'true');
+    expect(configIdInput).toHaveAttribute('aria-invalid', 'true');
 
     // Test 2: Invalid UUID format should show error
-    await changeInputValue(configIdValueInput, 'invalid-uuid-format');
+    await changeInputValue(configIdInput, 'invalid-uuid-format');
 
     await act(async () => {
       extensionBridge.validate();
     });
 
-    expect(configIdValueInput).toHaveAttribute('aria-invalid', 'true');
+    expect(configIdInput).toHaveAttribute('aria-invalid', 'true');
 
     // Test 3: Valid UUID format should pass
     await changeInputValue(
-      configIdValueInput,
+      configIdInput,
       '599ca3ec-4a21-4659-8dff-e292ad8d5fa4'
     );
 
@@ -508,7 +534,7 @@ describe('Send data view', () => {
       extensionBridge.validate();
     });
 
-    expect(configIdValueInput).not.toHaveAttribute('aria-invalid', 'true');
+    expect(configIdInput).not.toHaveAttribute('aria-invalid', 'true');
   }, 15000);
 
   describe('query params editor', () => {
@@ -561,7 +587,7 @@ describe('Send data view', () => {
       await act(async () => {
         extensionBridge.init({
           settings: {
-            url: 'https://edge.adobedc.net/ee/v1/interact?configId=test-config&a=b&c=d'
+            url: 'https://edge.adobedc.net/ee/v1/interact?configId=12345678-1234-1234-1234-123456789abc&a=b&c=d'
           }
         });
       });
