@@ -39,14 +39,11 @@ export default ({ method, url, baseUrlId, configId }) => {
     finalUrl = constructUrl(baseUrlId, configId);
   }
 
-  // Return the primary settings with the constructed URL
-  // The baseUrlId and configId are for internal form management,
-  // but the final URL is what gets sent in the actual request
+  // Return only the essential properties needed for action execution
+  // baseUrlId and configId are internal form management properties
+  // and shouldn't be part of the final action settings
   return {
     method,
-    url: finalUrl,
-    // Store the component values for form persistence
-    baseUrlId,
-    configId
+    url: finalUrl
   };
 };
