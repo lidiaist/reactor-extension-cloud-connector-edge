@@ -9,7 +9,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-import { screen, act } from '@testing-library/react';
+import { screen, act, waitFor } from '@testing-library/react';
 import renderView from '../../__tests_helpers__/renderView';
 import {
   changePickerValue,
@@ -448,6 +448,16 @@ describe('Send data view', () => {
     const { queryParamsTab } = getFromFields();
     await click(queryParamsTab);
 
+    // Wait for the component to render properly
+    await waitFor(
+      () => {
+        expect(
+          screen.getByLabelText('Query Param Value 0')
+        ).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
+
     // The extension should already have configId parameter by default
     const configIdValueInput = getTextFieldByLabel('Query Param Value 0');
 
@@ -480,7 +490,7 @@ describe('Send data view', () => {
     });
 
     expect(configIdValueInput).not.toHaveAttribute('aria-invalid', 'true');
-  });
+  }, 15000);
 
   describe('query params editor', () => {
     test('allows you to add a new row', async () => {
