@@ -23,7 +23,25 @@ module.exports = ({
   const { url, headers: settingsHeaders, method, responseKey } = settings;
   let { body, useMtls = false } = settings;
 
-  const fetchFunction = useMtls ? mtlsFetch : fetch;
+  // Debug logging
+  console.log('🔍 Event Forwarding Debug:', {
+    url,
+    method,
+    headers: settingsHeaders,
+    body: typeof body === 'string' ? body : JSON.stringify(body, null, 2),
+    useMtls,
+    responseKey
+  });
+
+  // Use native fetch if Adobe fetch utilities are not available
+  const fetchFunction = useMtls ? mtlsFetch || fetch : fetch || global.fetch;
+
+  // Fallback to native fetch if Adobe utilities fail
+  if (!fetchFunction) {
+    throw new Error(
+      'No fetch function available. Please check your Event Forwarding configuration.'
+    );
+  }
 
   if (settingsHeaders && settingsHeaders.length > 0) {
     headers = settingsHeaders.reduce((accumulator, o) => {
@@ -42,21 +60,40 @@ module.exports = ({
     headers
   };
 
-  return fetchFunction(url, fetchOptions).then((r) => {
-    const accRuleStash = ruleStash['adobe-cloud-connector'] || {
-      responses: {}
-    };
+  return fetchFunction(url, fetchOptions)
+    .then((r) => {
+      // Debug response
+      console.log('✅ Request sent successfully:', {
+        status: r.status,
+        statusText: r.statusText,
+        url: r.url
+      });
 
-    if (responseKey) {
-      return r
-        .arrayBuffer()
-        .then(byteArrayToString)
-        .then((bodyResponse) => {
-          accRuleStash.responses[responseKey] = bodyResponse;
-          return accRuleStash;
-        });
-    }
+      const accRuleStash = ruleStash['data-sharing-at-the-edge'] || {
+        responses: {}
+      };
 
-    return accRuleStash;
-  });
+      if (responseKey) {
+        return r
+          .arrayBuffer()
+          .then(byteArrayToString)
+          .then((bodyResponse) => {
+            accRuleStash.responses[responseKey] = bodyResponse;
+            return accRuleStash;
+          });
+      }
+
+      return accRuleStash;
+    })
+    .catch((error) => {
+      // Debug errors
+      console.error('❌ Event Forwarding Error:', {
+        message: error.message,
+        stack: error.stack,
+        url,
+        method,
+        body
+      });
+      throw error;
+    });
 };

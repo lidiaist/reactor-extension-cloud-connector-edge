@@ -3,22 +3,21 @@ Copyright 2020 Adobe. All rights reserved.
 This file is licensed to you under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License. You may obtain a copy
 of the License at http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software distributed under
 the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
 
-import { screen, act, waitFor, fireEvent } from '@testing-library/react';
+import { screen, act } from '@testing-library/react';
 import renderView from '../../__tests_helpers__/renderView';
-import {
-  changePickerValue,
-  changeInputValue,
-  click
-} from '../../__tests_helpers__/jsDomHelpers';
+import { changeInputValue, click } from '../../__tests_helpers__/jsDomHelpers';
 
 import SendData from '../sendData';
 import createExtensionBridge from '../../__tests_helpers__/createExtensionBridge';
+import addQueryParamsToUrl from '../../utils/addQueryParamsToUrl';
+import getRequestSettings from '../components/requestSection/getSettings';
 
 let extensionBridge;
 let nativeFetch;
@@ -242,8 +241,6 @@ describe('Send data view', () => {
     expect(settings.url).toBe(
       'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc'
     );
-    expect(settings.baseUrlId).toBe('production');
-    expect(settings.configId).toBe('12345678-1234-1234-1234-123456789abc');
     expect(settings.method).toBe('POST');
   });
 
@@ -267,8 +264,6 @@ describe('Send data view', () => {
     expect(settings.url).toBe(
       'https://edge.adobedc.net/ee-pre-prod/v1/collect?configId=87654321-4321-4321-4321-ba9876543210'
     );
-    expect(settings.baseUrlId).toBe('pre-prod');
-    expect(settings.configId).toBe('87654321-4321-4321-4321-ba9876543210');
     expect(settings.method).toBe('POST');
     expect(settings.headers).toEqual([{ key: 'cc', value: 'dd' }]);
     expect(settings.body).toEqual({ ee: 'ff' });
@@ -302,16 +297,10 @@ describe('Send data view', () => {
     expect(settings.url).toBe(
       'https://edge.adobedc.net/ee-pre-prod/v1/collect?configId=87654321-4321-4321-4321-ba9876543210&testParam=testValue'
     );
-    expect(settings.baseUrlId).toBe('pre-prod');
-    expect(settings.configId).toBe('87654321-4321-4321-4321-ba9876543210');
   }, 10000);
 
   // Unit test for URL construction functions
   test('URL construction and query parameter handling work correctly', () => {
-    // Test the addQueryParamsToUrl function directly
-    const addQueryParamsToUrl =
-      require('../../utils/addQueryParamsToUrl').default;
-
     // Test 1: Preserves configId when adding other params
     const originalUrl =
       'https://edge.adobedc.net/ee-pre-prod/v1/collect?configId=12345678-1234-1234-1234-123456789abc';
@@ -334,10 +323,7 @@ describe('Send data view', () => {
     );
 
     // Test 3: getSettings constructs URL from baseUrlId and configId
-    const getSettings =
-      require('../components/requestSection/getSettings').default;
-
-    const settingsResult = getSettings({
+    const settingsResult = getRequestSettings({
       method: 'POST',
       baseUrlId: 'pre-prod',
       configId: '87654321-4321-4321-4321-ba9876543210'
@@ -346,10 +332,7 @@ describe('Send data view', () => {
     expect(settingsResult.url).toBe(
       'https://edge.adobedc.net/ee-pre-prod/v1/collect?configId=87654321-4321-4321-4321-ba9876543210'
     );
-    expect(settingsResult.baseUrlId).toBe('pre-prod');
-    expect(settingsResult.configId).toBe(
-      '87654321-4321-4321-4321-ba9876543210'
-    );
+    expect(settingsResult.method).toBe('POST');
   });
 
   test('sets settings from body raw value', async () => {
@@ -373,8 +356,6 @@ describe('Send data view', () => {
     expect(extensionBridge.getSettings()).toEqual({
       method: 'POST',
       url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-      baseUrlId: 'production',
-      configId: '12345678-1234-1234-1234-123456789abc',
       body: { ee: 'ff' }
     });
   });
@@ -400,8 +381,7 @@ describe('Send data view', () => {
       });
     });
 
-    const { headersTab, bodyTab, environmentSelect, configIdInput } =
-      getFromFields();
+    const { headersTab, bodyTab, configIdInput } = getFromFields();
 
     // Check ConfigId input
     expect(configIdInput).not.toHaveAttribute('aria-invalid', 'true');
@@ -575,9 +555,7 @@ describe('Send data view', () => {
           ]
         },
         method: 'POST',
-        url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc&a=b&c=d',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc'
+        url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc&a=b&c=d'
       });
     });
 
@@ -612,9 +590,7 @@ describe('Send data view', () => {
           ]
         },
         method: 'POST',
-        url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc&a=b',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc'
+        url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc&a=b'
       });
     });
   });
@@ -653,8 +629,6 @@ describe('Send data view', () => {
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
         url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc',
         headers: [
           {
             key: 'a',
@@ -710,8 +684,6 @@ describe('Send data view', () => {
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
         url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc',
         headers: [
           {
             key: 'a',
@@ -767,8 +739,6 @@ describe('Send data view', () => {
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
         url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc',
         body: {
           a: 'b',
           c: 'd'
@@ -804,8 +774,6 @@ describe('Send data view', () => {
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
         url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc',
         body: {
           a: 'b'
         }
@@ -837,8 +805,6 @@ describe('Send data view', () => {
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
         url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc',
         body: { a: 'b', c: 'd' }
       });
     });
@@ -864,9 +830,7 @@ describe('Send data view', () => {
 
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
-        url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc'
+        url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc'
       });
 
       const { bodyRawCheckbox } = getFromFields();
@@ -875,8 +839,6 @@ describe('Send data view', () => {
       expect(extensionBridge.getSettings()).toEqual({
         method: 'POST',
         url: 'https://edge.adobedc.net/ee/v1/collect?configId=12345678-1234-1234-1234-123456789abc',
-        baseUrlId: 'production',
-        configId: '12345678-1234-1234-1234-123456789abc',
         body: '{a:"b",c:"d"}a'
       });
     });

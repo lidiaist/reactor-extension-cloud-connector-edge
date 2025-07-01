@@ -15,8 +15,6 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { Flex, Heading, Picker, Item, View } from '@adobe/react-spectrum';
 
 import WrappedTextField from '../../../components/wrappedTextField';
-import getQueryParamsFromUrl from '../../../utils/getQueryParamsFromUrl';
-import getEmptyQueryParam from '../queryParamsSection/getEmptyValue';
 
 const BASE_URL_OPTIONS = [
   {
@@ -30,23 +28,6 @@ const BASE_URL_OPTIONS = [
     url: 'https://edge.adobedc.net/ee-pre-prod/v1/collect'
   }
 ];
-
-const parseQueryParams = (setValue, v) => {
-  const queryParams = getQueryParamsFromUrl(v);
-  // Filter out configId since it's handled separately
-  const filteredQueryParams = queryParams.filter(
-    (param) => param.key !== 'configId'
-  );
-
-  if (filteredQueryParams.length === 0) {
-    filteredQueryParams.push(getEmptyQueryParam());
-  }
-
-  setValue('queryParams', filteredQueryParams, {
-    shouldValidate: false,
-    shouldDirty: false
-  });
-};
 
 const constructUrl = (baseUrlId, configId, queryParams = []) => {
   const baseUrlOption = BASE_URL_OPTIONS.find(
@@ -71,7 +52,12 @@ export default function RequestSectionFields({ onMethodUpdate }) {
 
   const baseUrlId = watch('baseUrlId');
   const configId = watch('configId');
-  const queryParams = watch('queryParams') || [];
+  const queryParamsRaw = watch('queryParams');
+
+  const queryParams = React.useMemo(
+    () => queryParamsRaw || [],
+    [queryParamsRaw]
+  );
 
   // Update the full URL whenever baseUrlId, configId, or queryParams change
   React.useEffect(() => {
